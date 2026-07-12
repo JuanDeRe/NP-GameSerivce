@@ -9,10 +9,14 @@ namespace GameService.Controllers;
 public class MatchesController : ControllerBase
 {
     private readonly IGameSessionService _gameSessionService;
+    private readonly IMatchLifecycleService _matchLifecycleService;
 
-    public MatchesController(IGameSessionService gameSessionService)
+    public MatchesController(
+        IGameSessionService gameSessionService,
+        IMatchLifecycleService matchLifecycleService)
     {
         _gameSessionService = gameSessionService;
+        _matchLifecycleService = matchLifecycleService;
     }
 
     [HttpPost]
@@ -51,5 +55,22 @@ public class MatchesController : ControllerBase
     {
         var matches = _gameSessionService.GetAllMatches();
         return Ok(matches);
+    }
+    [HttpPost("{matchId}/finish")]
+    public IActionResult FinishMatch(
+        string matchId,
+        [FromBody] FinishMatchRequest request)
+    {
+        var match = _matchLifecycleService.FinishMatch(matchId, request.Winner);
+
+        if (match is null)
+        {
+            return NotFound(new
+            {
+                message = $"Match '{matchId}' was not found."
+            });
+        }
+
+        return Ok(match);
     }
 }

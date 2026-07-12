@@ -1,21 +1,52 @@
 ﻿using GameService.Contracts;
 using GameService.Models;
 using GameService.Services;
+using GameService.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace GameService.Factories;
 
 public class GameSessionFactory : IGameSessionFactory
 {
     private readonly IMapService _mapService;
+    private readonly GameSettingsOptions _gameSettings;
 
-    public GameSessionFactory(IMapService mapService)
+    public GameSessionFactory(
+        IMapService mapService,
+        IOptions<GameSettingsOptions> gameSettings)
     {
         _mapService = mapService;
+        _gameSettings = gameSettings.Value;
     }
 
     public GameSession Create(CreateMatchRequest request)
     {
         var matchId = $"match-{Guid.NewGuid():N}";
+        
+        var animatronicPlayers = request.Players
+            .Where(player => player.Role == PlayerRole.Animatronic)
+            .ToList();
+
+        if (animatronicPlayers.Any(player =>
+                player.AnimatronicType == AnimatronicType.None))
+        {
+            throw new InvalidOperationException(
+                "Every animatronic player must have an animatronic type."
+            );
+        }
+
+        var duplicatedTypes = animatronicPlayers
+            .GroupBy(player => player.AnimatronicType)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToList();
+
+        if (duplicatedTypes.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Duplicated animatronic types are not allowed: {string.Join(", ", duplicatedTypes)}"
+            );
+        }
 
         var players = request.Players
             .Select((player, index) =>
@@ -27,6 +58,7 @@ public class GameSessionFactory : IGameSessionFactory
                 {
                     PlayerId = player.PlayerId,
                     Role = player.Role,
+                    AnimatronicType = player.AnimatronicType,
                     Position = spawnPosition,
                     CurrentRoomId = roomId,
                     IsConnected = true
@@ -38,6 +70,8 @@ public class GameSessionFactory : IGameSessionFactory
         {
             MatchId = matchId,
             Status = MatchStatus.Active,
+            Winner = MatchWinner.None,
+            DurationSeconds = _gameSettings.MatchDurationSeconds,
             Players = players,
             CreatedAtUtc = DateTime.UtcNow,
             StartedAtUtc = DateTime.UtcNow

@@ -8,6 +8,10 @@ public class GameSession
 
     public MatchStatus Status { get; set; } = MatchStatus.Waiting;
 
+    public MatchWinner Winner { get; set; } = MatchWinner.None;
+
+    public int DurationSeconds { get; set; }
+
     public List<PlayerState> Players { get; set; } = [];
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
