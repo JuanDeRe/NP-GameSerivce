@@ -19,6 +19,9 @@ public class GameSession
     public DateTime? StartedAtUtc { get; set; }
 
     public DateTime? FinishedAtUtc { get; set; }
+    
+    
+    public List<DoorState> Doors { get; set; } = [];
 
     [JsonIgnore]
     public object SyncRoot { get; } = new();

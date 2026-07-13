@@ -14,4 +14,10 @@ public class PlayerState
     public string CurrentRoomId { get; set; } = string.Empty;
 
     public bool IsConnected { get; set; } = true;
+    
+    public bool IsAttacking { get; set; }
+
+    public string? ActiveAttackZoneId { get; set; }
+
+    public float AttackProgress { get; set; }
 }

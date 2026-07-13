@@ -15,6 +15,14 @@ public class GameMap
     public List<MapArea> Rooms { get; set; } = [];
 
     public List<MapArea> BlockedAreas { get; set; } = [];
+    
+    
+    public List<SpawnPoint> SpawnPoints { get; set; } = [];
+    
+    
+    public List<GameplayZone> GameplayZones { get; set; } = [];
+    
+    public List<MapArea> WalkableAreas { get; set; } = [];
 
     public bool IsInsideMap(Position position)
     {
@@ -33,5 +41,12 @@ public class GameMap
     {
         var room = Rooms.FirstOrDefault(area => area.Contains(position));
         return room?.Id ?? "unknown";
+    }
+    
+    public bool IsWalkable(Position position)
+    {
+        return WalkableAreas.Any(
+            area => area.Contains(position)
+        );
     }
 }

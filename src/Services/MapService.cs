@@ -23,7 +23,9 @@ public class MapService : IMapService
 
     public bool CanMoveTo(Position position)
     {
-        return _map.IsInsideMap(position) && !_map.IsBlocked(position);
+        return _map.IsInsideMap(position) &&
+               _map.IsWalkable(position) &&
+               !_map.IsBlocked(position);
     }
 
     private static GameMap BuildDemoMap()
@@ -33,93 +35,120 @@ public class MapService : IMapService
             MapId = "pizzeria-demo-map",
             MinX = 0,
             MinY = 0,
-            MaxX = 100,
+            MaxX = 50,
             MaxY = 60,
-            Rooms =
+
+            Rooms = [],
+
+            WalkableAreas =
             [
                 new MapArea
                 {
-                    Id = "office",
-                    Name = "Oficina",
-                    X = 80,
-                    Y = 20,
-                    Width = 15,
-                    Height = 15
-                },
-                new MapArea
-                {
-                    Id = "main_stage",
-                    Name = "Escenario Principal",
-                    X = 5,
-                    Y = 40,
-                    Width = 20,
-                    Height = 12
-                },
-                new MapArea
-                {
-                    Id = "pirate_cove",
-                    Name = "Pirate Cove",
-                    X = 5,
-                    Y = 10,
-                    Width = 15,
-                    Height = 12
-                },
-                new MapArea
-                {
-                    Id = "kitchen",
-                    Name = "Cocina",
-                    X = 35,
-                    Y = 40,
-                    Width = 15,
-                    Height = 12
-                },
-                new MapArea
-                {
-                    Id = "parts_service",
-                    Name = "Partes y Servicio",
-                    X = 35,
-                    Y = 8,
-                    Width = 15,
-                    Height = 12
-                },
-                new MapArea
-                {
-                    Id = "bathroom",
-                    Name = "Baños",
-                    X = 58,
-                    Y = 8,
-                    Width = 14,
-                    Height = 12
-                },
-                new MapArea
-                {
-                    Id = "left_hall",
-                    Name = "Pasillo Izquierdo",
-                    X = 55,
-                    Y = 35,
-                    Width = 25,
-                    Height = 10
-                },
-                new MapArea
-                {
-                    Id = "right_hall",
-                    Name = "Pasillo Derecho",
-                    X = 55,
-                    Y = 15,
-                    Width = 25,
-                    Height = 10
+                    Id = "temporary_full_map",
+                    Name = "Área transitable temporal",
+                    X = 0,
+                    Y = 0,
+                    Width = 50,
+                    Height = 60
                 }
             ],
-            BlockedAreas =
+
+            BlockedAreas = [],
+
+            SpawnPoints =
             [
-                new MapArea
+                new SpawnPoint
                 {
-                    Id = "wall_demo_01",
-                    Name = "Pared Central",
-                    X = 50,
-                    Y = 25,
-                    Width = 8,
-                    Height = 10
+                    Id = "guard_spawn",
+                    Role = PlayerRole.Guard,
+                    AnimatronicType = AnimatronicType.None,
+                    Position = new Position(22.20f, 5.92f),
+                    RoomId = "office"
+                },
+                new SpawnPoint
+                {
+                    Id = "foxy_spawn",
+                    Role = PlayerRole.Animatronic,
+                    AnimatronicType = AnimatronicType.Foxy,
+                    Position = new Position(6.06f, 29.51f),
+                    RoomId = "pirate_cove"
+                },
+                new SpawnPoint
+                {
+                    Id = "freddy_spawn",
+                    Role = PlayerRole.Animatronic,
+                    AnimatronicType = AnimatronicType.Freddy,
+                    Position = new Position(22.21f, 45.37f),
+                    RoomId = "main_stage"
+                },
+                new SpawnPoint
+                {
+                    Id = "bonnie_spawn",
+                    Role = PlayerRole.Animatronic,
+                    AnimatronicType = AnimatronicType.Bonnie,
+                    Position = new Position(19.83f, 45.98f),
+                    RoomId = "main_stage"
+                },
+                new SpawnPoint
+                {
+                    Id = "chica_spawn",
+                    Role = PlayerRole.Animatronic,
+                    AnimatronicType = AnimatronicType.Chica,
+                    Position = new Position(24.66f, 46.25f),
+                    RoomId = "main_stage"
+                }
+            ],
+
+            GameplayZones =
+            [
+                // Puerta izquierda
+                new GameplayZone
+                {
+                    Id = "left_door_visibility",
+                    Name = "Zona visible de la puerta izquierda",
+                    Type = MapZoneType.DoorVisibility,
+                    Side = "Left",
+                    X = 14.35f,
+                    Y = 2.00f,
+                    Width = 4.49f,
+                    Height = 8.83f
+                },
+                new GameplayZone
+                {
+                    Id = "left_attack_zone",
+                    Name = "Zona de ataque izquierda",
+                    Type = MapZoneType.Attack,
+                    Side = "Left",
+                    RequiredDoorId = "left_door",
+                    X = 16.03f,
+                    Y = 3.69f,
+                    Width = 2.80f,
+                    Height = 1.68f
+                },
+
+                // Puerta derecha
+                new GameplayZone
+                {
+                    Id = "right_door_visibility",
+                    Name = "Zona visible de la puerta derecha",
+                    Type = MapZoneType.DoorVisibility,
+                    Side = "Right",
+                    X = 25.54f,
+                    Y = 2.00f,
+                    Width = 4.51f,
+                    Height = 8.85f
+                },
+                new GameplayZone
+                {
+                    Id = "right_attack_zone",
+                    Name = "Zona de ataque derecha",
+                    Type = MapZoneType.Attack,
+                    Side = "Right",
+                    RequiredDoorId = "right_door",
+                    X = 25.54f,
+                    Y = 3.71f,
+                    Width = 2.80f,
+                    Height = 1.64f
                 }
             ]
         };

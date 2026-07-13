@@ -6,7 +6,7 @@ namespace GameService.Services;
 
 public class MovementService : IMovementService
 {
-    private const float AnimatronicSpeed = 8f;
+    private const float AnimatronicSpeed = 3f;
     private const float GuardSpeed = 0f;
 
     private readonly IGameSessionStore _gameSessionStore;
@@ -76,7 +76,8 @@ public class MovementService : IMovementService
                 Y = currentPosition.Y
             };
 
-            if (_mapService.CanMoveTo(candidateX))
+            if (_mapService.CanMoveTo(candidateX) &&
+                !CollidesWithClosedDoor(session, candidateX))
             {
                 finalPosition.X = candidateX.X;
             }
@@ -87,13 +88,17 @@ public class MovementService : IMovementService
                 Y = currentPosition.Y + deltaY
             };
 
-            if (_mapService.CanMoveTo(candidateFinalY))
+            if (_mapService.CanMoveTo(candidateFinalY) &&
+                !CollidesWithClosedDoor(session, candidateFinalY))
             {
                 finalPosition.Y = candidateFinalY.Y;
             }
 
             player.Position = finalPosition;
             player.CurrentRoomId = _mapService.GetRoomId(finalPosition);
+            
+            UpdateAttackZoneState(player);
+            
 
             _gameSessionStore.Save(session);
 
@@ -118,5 +123,35 @@ public class MovementService : IMovementService
         }
 
         return new Position(x / magnitude, y / magnitude);
+    }
+    
+    private void UpdateAttackZoneState(PlayerState player)
+    {
+        var map = _mapService.GetCurrentMap();
+
+        var attackZone = map.GameplayZones.FirstOrDefault(zone =>
+            zone.Type == MapZoneType.Attack &&
+            zone.Contains(player.Position)
+        );
+
+        if (attackZone is null)
+        {
+            player.IsAttacking = false;
+            player.ActiveAttackZoneId = null;
+            player.AttackProgress = 0f;
+            return;
+        }
+
+        player.IsAttacking = true;
+        player.ActiveAttackZoneId = attackZone.Id;
+    }
+    private static bool CollidesWithClosedDoor(
+        GameSession session,
+        Position position)
+    {
+        return session.Doors.Any(door =>
+            door.IsClosed &&
+            door.CollisionArea.Contains(position)
+        );
     }
 }
