@@ -23,7 +23,7 @@ builder.Services.AddSingleton<IMapService, MapService>();
 builder.Services.AddSingleton<IGameSessionStore, InMemoryGameSessionStore>();
 builder.Services.AddSingleton<IGameSessionFactory, GameSessionFactory>();
 builder.Services.AddHostedService<MatchExpirationProcessor>();
-
+builder.Services.AddScoped<ICameraService, CameraService>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 builder.Services.AddScoped<IMovementService, MovementService>();
 builder.Services.AddScoped<IDoorService, DoorService>();

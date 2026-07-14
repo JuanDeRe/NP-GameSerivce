@@ -52,8 +52,8 @@ public class GameSessionFactory : IGameSessionFactory
                 };
             })
             .ToList();
-
         var now = DateTime.UtcNow;
+        var map = _mapService.GetCurrentMap();
 
         return new GameSession
         {
@@ -63,6 +63,18 @@ public class GameSessionFactory : IGameSessionFactory
             DurationSeconds = _gameSettings.MatchDurationSeconds,
             Players = players,
             Doors = CreateInitialDoors(),
+
+            ActiveCameraId = null,
+
+            SecurityCameras = map.SecurityCameras
+                .Select(camera => new SecurityCameraState
+                {
+                    CameraId = camera.CameraId,
+                    IsEnabled = camera.IsEnabled,
+                    IsSabotaged = false
+                })
+                .ToList(),
+
             CreatedAtUtc = now,
             StartedAtUtc = now
         };

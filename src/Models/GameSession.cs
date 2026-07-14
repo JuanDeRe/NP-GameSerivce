@@ -20,6 +20,9 @@ public class GameSession
 
     public DateTime? FinishedAtUtc { get; set; }
     
+    public string? ActiveCameraId { get; set; }
+
+    public List<SecurityCameraState> SecurityCameras { get; set; } = [];
     
     public List<DoorState> Doors { get; set; } = [];
 

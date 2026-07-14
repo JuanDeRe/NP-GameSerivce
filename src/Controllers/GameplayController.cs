@@ -10,13 +10,16 @@ public class GameplayController : ControllerBase
 {
     private readonly IMovementService _movementService;
     private readonly IDoorService _doorService;
+    private readonly ICameraService _cameraService;
 
     public GameplayController(
         IMovementService movementService,
-        IDoorService doorService)
+        IDoorService doorService,
+        ICameraService cameraService)
     {
         _movementService = movementService;
         _doorService = doorService;
+        _cameraService = cameraService;
     }
 
     [HttpPost("move")]
@@ -50,6 +53,30 @@ public class GameplayController : ControllerBase
             );
 
             return Ok(doorEvent);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new
+            {
+                message = exception.Message
+            });
+        }
+    }
+    [HttpPost("cameras/active")]
+    public ActionResult<ActiveCameraChangedEvent>
+        ChangeCamera(
+            string matchId,
+            [FromBody] ChangeCameraCommand command)
+    {
+        try
+        {
+            var cameraEvent =
+                _cameraService.ChangeCamera(
+                    matchId,
+                    command
+                );
+
+            return Ok(cameraEvent);
         }
         catch (InvalidOperationException exception)
         {

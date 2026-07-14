@@ -416,6 +416,109 @@ public class MapService : IMapService
                     Height = 1.14f
                 }
             ],
+            
+            SecurityCameras =
+            [
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_1a",
+                    Name = "Escenario principal",
+                    VisibleRoomIds =
+                    [
+                        "main_stage"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_1b",
+                    Name = "Comedor central",
+                    VisibleRoomIds =
+                    [
+                        "dining_room"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_1c",
+                    Name = "Pirate Cove",
+                    VisibleRoomIds =
+                    [
+                        "pirate_cove"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_2a",
+                    Name = "Pasillo izquierdo superior",
+                    VisibleRoomIds =
+                    [
+                        "left_hall"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_2b",
+                    Name = "Pasillo izquierdo inferior",
+                    VisibleRoomIds =
+                    [
+                        "left_hall"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_3",
+                    Name = "Supply closet",
+                    VisibleRoomIds =
+                    [
+                        "supply_closet"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_4a",
+                    Name = "Pasillo derecho superior",
+                    VisibleRoomIds =
+                    [
+                        "right_hall"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_4b",
+                    Name = "Pasillo derecho inferior",
+                    VisibleRoomIds =
+                    [
+                        "right_hall"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_5",
+                    Name = "Partes y servicio",
+                    VisibleRoomIds =
+                    [
+                        "parts_service"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_6",
+                    Name = "Cocina",
+                    VisibleRoomIds =
+                    [
+                        "kitchen"
+                    ]
+                },
+                new SecurityCameraDefinition
+                {
+                    CameraId = "cam_7",
+                    Name = "Pasillo de baños",
+                    VisibleRoomIds =
+                    [
+                        "bathroom_hall"
+                    ]
+                }
+            ],
 
             BlockedAreas =
             [

@@ -23,6 +23,9 @@ public class GameMap
     public List<GameplayZone> GameplayZones { get; set; } = [];
     
     public List<MapArea> WalkableAreas { get; set; } = [];
+    
+    
+    public List<SecurityCameraDefinition> SecurityCameras { get; set; } = [];
 
     public bool IsInsideMap(Position position)
     {
