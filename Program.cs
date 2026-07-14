@@ -26,6 +26,7 @@ builder.Services.AddHostedService<MatchExpirationProcessor>();
 
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 builder.Services.AddScoped<IMovementService, MovementService>();
+builder.Services.AddScoped<IDoorService, DoorService>();
 
 var app = builder.Build();
 
