@@ -57,17 +57,22 @@ public class MatchesController : ControllerBase
         return Ok(matches);
     }
     [HttpPost("{matchId}/finish")]
-    public IActionResult FinishMatch(
+    public async Task<IActionResult> FinishMatch(
         string matchId,
         [FromBody] FinishMatchRequest request)
     {
-        var match = _matchLifecycleService.FinishMatch(matchId, request.Winner);
+        var match = await _matchLifecycleService
+            .FinishMatchAsync(
+                matchId,
+                request.Winner
+            );
 
         if (match is null)
         {
             return NotFound(new
             {
-                message = $"Match '{matchId}' was not found."
+                message =
+                    $"Match '{matchId}' was not found."
             });
         }
 

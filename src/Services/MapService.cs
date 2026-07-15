@@ -519,6 +519,150 @@ public class MapService : IMapService
                     ]
                 }
             ],
+            CollectibleSpawnPoints =
+            [
+                // Pirate Cove
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_01",
+                    Position = new Position(2.87f, 27.37f),
+                    RoomId = "pirate_cove"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_02",
+                    Position = new Position(2.59f, 31.09f),
+                    RoomId = "pirate_cove"
+                },
+
+                // Partes y servicio
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_03",
+                    Position = new Position(3.74f, 41.59f),
+                    RoomId = "parts_service"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_04",
+                    Position = new Position(6.52f, 37.71f),
+                    RoomId = "parts_service"
+                },
+
+                // Backstage
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_05",
+                    Position = new Position(28.34f, 52.99f),
+                    RoomId = "backstage"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_06",
+                    Position = new Position(10.99f, 51.09f),
+                    RoomId = "backstage_office"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_07",
+                    Position = new Position(9.32f, 53.87f),
+                    RoomId = "backstage_office"
+                },
+
+                // Comedor
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_08",
+                    Position = new Position(33.93f, 41.03f),
+                    RoomId = "dining_room"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_09",
+                    Position = new Position(28.35f, 31.56f),
+                    RoomId = "dining_room"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_10",
+                    Position = new Position(22.75f, 32.12f),
+                    RoomId = "dining_room"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_11",
+                    Position = new Position(22.50f, 24.32f),
+                    RoomId = "dining_room"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_12",
+                    Position = new Position(17.17f, 36.03f),
+                    RoomId = "dining_room"
+                },
+
+                // Baño de mujeres
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_13",
+                    Position = new Position(46.79f, 36.01f),
+                    RoomId = "women_bathroom"
+                },
+
+                // Baño de hombres
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_14",
+                    Position = new Position(46.24f, 26.01f),
+                    RoomId = "men_bathroom"
+                },
+
+                // Pasillo de baños
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_15",
+                    Position = new Position(38.40f, 24.31f),
+                    RoomId = "bathroom_hall"
+                },
+
+                // Cocina
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_16",
+                    Position = new Position(39.53f, 14.28f),
+                    RoomId = "kitchen"
+                },
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_17",
+                    Position = new Position(31.71f, 14.27f),
+                    RoomId = "kitchen"
+                },
+
+                // Pasillo derecho
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_18",
+                    Position = new Position(26.67f, 15.94f),
+                    RoomId = "right_hall"
+                },
+
+                // Pasillo izquierdo
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_19",
+                    Position = new Position(16.60f, 16.51f),
+                    RoomId = "left_hall"
+                },
+
+                // Laundry room / Supply closet
+                new CollectibleSpawnPoint
+                {
+                    SpawnPointId = "collectible_spawn_20",
+                    Position = new Position(11.01f, 13.73f),
+                    RoomId = "supply_closet"
+                }
+            ],
 
             BlockedAreas =
             [

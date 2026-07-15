@@ -20,4 +20,12 @@ public class PlayerState
     public string? ActiveAttackZoneId { get; set; }
 
     public float AttackProgress { get; set; }
+    
+    public int CollectedItems { get; set; }
+
+    public int RequiredItems { get; set; } = 5;
+
+    public bool IsEmpowered { get; set; }
+    
+    public CollectibleType? RequiredCollectibleType { get; set; }
 }

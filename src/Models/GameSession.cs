@@ -24,6 +24,8 @@ public class GameSession
 
     public List<SecurityCameraState> SecurityCameras { get; set; } = [];
     
+    public List<MatchCollectible> Collectibles { get; set; } = [];
+    
     public List<DoorState> Doors { get; set; } = [];
 
     [JsonIgnore]

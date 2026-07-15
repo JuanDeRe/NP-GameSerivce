@@ -31,7 +31,9 @@ public class MatchExpirationProcessor : BackgroundService
                 var lifecycleService = scope.ServiceProvider
                     .GetRequiredService<IMatchLifecycleService>();
 
-                var finishedMatches = lifecycleService.FinishExpiredMatches();
+                var finishedMatches =
+                    await lifecycleService
+                        .FinishExpiredMatchesAsync();
 
                 if (finishedMatches > 0)
                 {

@@ -11,6 +11,8 @@ namespace GameService.Factories;
 /// </summary>
 public class GameSessionFactory : IGameSessionFactory
 {
+    private const int RequiredItemsPerAnimatronic = 5;
+    
     private readonly IMapService _mapService;
     private readonly GameSettingsOptions _gameSettings;
 
@@ -48,20 +50,33 @@ public class GameSessionFactory : IGameSessionFactory
                     IsConnected = true,
                     IsAttacking = false,
                     ActiveAttackZoneId = null,
-                    AttackProgress = 0f
+                    AttackProgress = 0f,
+                    CollectedItems = 0,
+                    RequiredItems = player.Role == PlayerRole.Animatronic
+                        ? 5
+                        : 0,
+                    IsEmpowered = false
                 };
             })
             .ToList();
         var now = DateTime.UtcNow;
         var map = _mapService.GetCurrentMap();
+        var collectibles = CreateCollectibles(
+            players,
+            map
+        );
 
         return new GameSession
         {
             MatchId = matchId,
             Status = MatchStatus.Active,
             Winner = MatchWinner.None,
-            DurationSeconds = _gameSettings.MatchDurationSeconds,
+            DurationSeconds =
+                _gameSettings.MatchDurationSeconds,
+
             Players = players,
+            Collectibles = collectibles,
+
             Doors = CreateInitialDoors(),
 
             ActiveCameraId = null,
@@ -191,5 +206,93 @@ public class GameSessionFactory : IGameSessionFactory
                 }
             }
         ];
+    }
+    private static List<MatchCollectible> CreateCollectibles(
+        IReadOnlyCollection<PlayerState> players,
+        GameMap map)
+    {
+        var animatronics = players
+            .Where(player =>
+                player.Role == PlayerRole.Animatronic
+            )
+            .ToList();
+
+        var requiredSpawnPoints =
+            animatronics.Count * RequiredItemsPerAnimatronic;
+
+        if (map.CollectibleSpawnPoints.Count < requiredSpawnPoints)
+        {
+            throw new InvalidOperationException(
+                $"The map needs at least {requiredSpawnPoints} " +
+                "collectible spawn points, but only " +
+                $"{map.CollectibleSpawnPoints.Count} were configured."
+            );
+        }
+
+        // Mezcla los puntos para que cambien entre partidas.
+        var availableSpawnPoints = map.CollectibleSpawnPoints
+            .OrderBy(_ => Random.Shared.Next())
+            .ToList();
+
+        var collectibles = new List<MatchCollectible>();
+        var spawnIndex = 0;
+
+        foreach (var player in animatronics)
+        {
+            var collectibleType = GetCollectibleType(
+                player.AnimatronicType
+            );
+
+            for (var index = 0;
+                 index < RequiredItemsPerAnimatronic;
+                 index++)
+            {
+                var spawnPoint =
+                    availableSpawnPoints[spawnIndex++];
+
+                collectibles.Add(new MatchCollectible
+                {
+                    CollectibleId =
+                        $"collectible-{Guid.NewGuid():N}",
+
+                    Type = collectibleType,
+                    OwnerPlayerId = player.PlayerId,
+
+                    Position = new Position(
+                        spawnPoint.Position.X,
+                        spawnPoint.Position.Y
+                    ),
+
+                    RoomId = spawnPoint.RoomId,
+                    IsCollected = false,
+                    CollectedAtUtc = null
+                });
+            }
+        }
+
+        return collectibles;
+    }
+    private static CollectibleType GetCollectibleType(
+        AnimatronicType animatronicType)
+    {
+        return animatronicType switch
+        {
+            AnimatronicType.Chica =>
+                CollectibleType.ChicaItem,
+
+            AnimatronicType.Bonnie =>
+                CollectibleType.BonnieItem,
+
+            AnimatronicType.Freddy =>
+                CollectibleType.FreddyItem,
+
+            AnimatronicType.Foxy =>
+                CollectibleType.FoxyItem,
+
+            _ => throw new InvalidOperationException(
+                $"Animatronic type '{animatronicType}' " +
+                "does not have a collectible type."
+            )
+        };
     }
 }

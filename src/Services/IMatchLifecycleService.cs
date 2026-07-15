@@ -4,7 +4,10 @@ namespace GameService.Services;
 
 public interface IMatchLifecycleService
 {
-    int FinishExpiredMatches();
+    Task<int> FinishExpiredMatchesAsync();
 
-    GameSession? FinishMatch(string matchId, MatchWinner winner);
+    Task<GameSession?> FinishMatchAsync(
+        string matchId,
+        MatchWinner winner
+    );
 }

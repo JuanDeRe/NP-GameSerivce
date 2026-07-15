@@ -6,7 +6,8 @@ namespace GameService.Services;
 
 public class MovementService : IMovementService
 {
-    private const float AnimatronicSpeed = 3f;
+    private const float SearchingAnimatronicSpeed = 2f;
+    private const float EmpoweredAnimatronicSpeed = 4f;
     private const float GuardSpeed = 0f;
 
     private readonly IGameSessionStore _gameSessionStore;
@@ -48,9 +49,10 @@ public class MovementService : IMovementService
 
         var normalizedDirection = Normalize(command.DirectionX, command.DirectionY);
 
-        var speed = player.Role == PlayerRole.Animatronic
-            ? AnimatronicSpeed
-            : GuardSpeed;
+        var speed = player.IsEmpowered
+            ? EmpoweredAnimatronicSpeed
+            : SearchingAnimatronicSpeed;
+        
         lock (session.SyncRoot)
         {
             var currentPosition = player.Position;
@@ -98,6 +100,10 @@ public class MovementService : IMovementService
             player.CurrentRoomId = _mapService.GetRoomId(finalPosition);
             
             UpdateAttackZoneState(player);
+            var collectedItem = TryCollectNearbyItem(
+                session,
+                player
+            );
             
 
             _gameSessionStore.Save(session);
@@ -108,7 +114,19 @@ public class MovementService : IMovementService
                 PlayerId = player.PlayerId,
                 X = player.Position.X,
                 Y = player.Position.Y,
-                RoomId = player.CurrentRoomId
+                RoomId = player.CurrentRoomId,
+
+                CollectedCollectibleId =
+                    collectedItem?.CollectibleId,
+
+                CollectedItems =
+                    player.CollectedItems,
+
+                RequiredItems =
+                    player.RequiredItems,
+
+                IsEmpowered =
+                    player.IsEmpowered
             }; 
         }
     }
@@ -152,6 +170,56 @@ public class MovementService : IMovementService
         return session.Doors.Any(door =>
             door.IsClosed &&
             door.CollisionArea.Contains(position)
+        );
+    }
+    private static MatchCollectible? TryCollectNearbyItem(
+        GameSession session,
+        PlayerState player)
+    {
+        if (player.Role != PlayerRole.Animatronic)
+        {
+            return null;
+        }
+
+        var collectible = session.Collectibles
+            .FirstOrDefault(item =>
+                !item.IsCollected &&
+                item.OwnerPlayerId == player.PlayerId &&
+                CalculateDistance(
+                    item.Position,
+                    player.Position
+                ) <= 0.7f
+            );
+
+        if (collectible is null)
+        {
+            return null;
+        }
+
+        collectible.IsCollected = true;
+        collectible.CollectedAtUtc = DateTime.UtcNow;
+
+        player.CollectedItems++;
+
+        if (player.CollectedItems >= player.RequiredItems)
+        {
+            player.CollectedItems = player.RequiredItems;
+            player.IsEmpowered = true;
+        }
+
+        return collectible;
+    }
+
+    private static float CalculateDistance(
+        Position first,
+        Position second)
+    {
+        var deltaX = first.X - second.X;
+        var deltaY = first.Y - second.Y;
+
+        return MathF.Sqrt(
+            deltaX * deltaX +
+            deltaY * deltaY
         );
     }
 }

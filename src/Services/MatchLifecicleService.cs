@@ -1,30 +1,42 @@
-﻿using GameService.Models;
+﻿using GameService.Contracts;
+using GameService.Events;
+using GameService.Models;
 using GameService.Stores;
 
 namespace GameService.Services;
 
 /// <summary>
-/// Handles match expiration and finalization.
+/// Finishes matches and publishes their final state.
 /// </summary>
-public class MatchLifecycleService : IMatchLifecycleService
+public class MatchLifecycleService
+    : IMatchLifecycleService
 {
     private readonly IGameSessionStore _gameSessionStore;
+    private readonly IMatchEventPublisher _eventPublisher;
 
-    public MatchLifecycleService(IGameSessionStore gameSessionStore)
+    public MatchLifecycleService(
+        IGameSessionStore gameSessionStore,
+        IMatchEventPublisher eventPublisher)
     {
         _gameSessionStore = gameSessionStore;
+        _eventPublisher = eventPublisher;
     }
 
-    public int FinishExpiredMatches()
+    public async Task<int> FinishExpiredMatchesAsync()
     {
-        var activeMatches = _gameSessionStore.GetAll()
-            .Where(match => match.Status == MatchStatus.Active)
+        var activeMatches = _gameSessionStore
+            .GetAll()
+            .Where(match =>
+                match.Status == MatchStatus.Active
+            )
             .ToList();
 
         var finishedCount = 0;
 
         foreach (var match in activeMatches)
         {
+            MatchFinishedEvent? matchFinishedEvent = null;
+
             lock (match.SyncRoot)
             {
                 if (match.StartedAtUtc is null)
@@ -32,9 +44,13 @@ public class MatchLifecycleService : IMatchLifecycleService
                     continue;
                 }
 
-                var elapsedSeconds = (DateTime.UtcNow - match.StartedAtUtc.Value).TotalSeconds;
+                var elapsedSeconds =
+                    (DateTime.UtcNow -
+                     match.StartedAtUtc.Value)
+                    .TotalSeconds;
 
-                if (elapsedSeconds < match.DurationSeconds)
+                if (elapsedSeconds <
+                    match.DurationSeconds)
                 {
                     continue;
                 }
@@ -44,14 +60,28 @@ public class MatchLifecycleService : IMatchLifecycleService
                 match.FinishedAtUtc = DateTime.UtcNow;
 
                 _gameSessionStore.Save(match);
+
+                matchFinishedEvent =
+                    BuildMatchFinishedEvent(match);
+
                 finishedCount++;
+            }
+
+            if (matchFinishedEvent is not null)
+            {
+                await _eventPublisher
+                    .PublishMatchFinishedAsync(
+                        matchFinishedEvent
+                    );
             }
         }
 
         return finishedCount;
     }
 
-    public GameSession? FinishMatch(string matchId, MatchWinner winner)
+    public async Task<GameSession?> FinishMatchAsync(
+        string matchId,
+        MatchWinner winner)
     {
         var match = _gameSessionStore.GetById(matchId);
 
@@ -60,20 +90,50 @@ public class MatchLifecycleService : IMatchLifecycleService
             return null;
         }
 
+        MatchFinishedEvent? matchFinishedEvent = null;
+
         lock (match.SyncRoot)
         {
-            if (match.Status == MatchStatus.Finished)
+            if (match.Status != MatchStatus.Finished)
             {
-                return match;
+                match.Status = MatchStatus.Finished;
+                match.Winner = winner;
+                match.FinishedAtUtc =
+                    DateTime.UtcNow;
+
+                _gameSessionStore.Save(match);
+
+                matchFinishedEvent =
+                    BuildMatchFinishedEvent(match);
             }
-
-            match.Status = MatchStatus.Finished;
-            match.Winner = winner;
-            match.FinishedAtUtc = DateTime.UtcNow;
-
-            _gameSessionStore.Save(match);
-
-            return match;
         }
+
+        if (matchFinishedEvent is not null)
+        {
+            await _eventPublisher
+                .PublishMatchFinishedAsync(
+                    matchFinishedEvent
+                );
+        }
+
+        return match;
+    }
+
+    private static MatchFinishedEvent
+        BuildMatchFinishedEvent(GameSession match)
+    {
+        return new MatchFinishedEvent
+        {
+            MatchId = match.MatchId,
+            Winner = match.Winner.ToString(),
+
+            PlayerIds = match.Players
+                .Select(player => player.PlayerId)
+                .ToList(),
+
+            FinishedAtUtc =
+                match.FinishedAtUtc ??
+                DateTime.UtcNow
+        };
     }
 }

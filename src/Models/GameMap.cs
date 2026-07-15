@@ -24,6 +24,7 @@ public class GameMap
     
     public List<MapArea> WalkableAreas { get; set; } = [];
     
+    public List<CollectibleSpawnPoint> CollectibleSpawnPoints { get; set; } = [];
     
     public List<SecurityCameraDefinition> SecurityCameras { get; set; } = [];
 

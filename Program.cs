@@ -4,6 +4,9 @@ using GameService.Stores;
 using GameService.Services;
 using GameService.BackgroundServices;
 using GameService.Configuration;
+using GameService.Configuration;
+using GameService.Events;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +30,25 @@ builder.Services.AddScoped<ICameraService, CameraService>();
 builder.Services.AddScoped<IGameSessionService, GameSessionService>();
 builder.Services.AddScoped<IMovementService, MovementService>();
 builder.Services.AddScoped<IDoorService, DoorService>();
+builder.Services.AddSingleton<IMatchEventPublisher,RedisMatchEventPublisher>();
+builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection("Redis"));
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    serviceProvider =>
+    {
+        var configuration =
+            serviceProvider
+                .GetRequiredService<
+                    Microsoft.Extensions.Options.IOptions<
+                        RedisOptions
+                    >
+                >()
+                .Value;
 
+        return ConnectionMultiplexer.Connect(
+            configuration.ConnectionString
+        );
+    }
+);
 var app = builder.Build();
 
 app.MapControllers();
