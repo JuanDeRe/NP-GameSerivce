@@ -49,6 +49,31 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
         );
     }
 );
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    serviceProvider =>
+    {
+        var redisOptions = serviceProvider
+            .GetRequiredService<
+                Microsoft.Extensions.Options.IOptions<
+                    RedisOptions
+                >
+            >()
+            .Value;
+
+        var configuration =
+            ConfigurationOptions.Parse(
+                redisOptions.ConnectionString
+            );
+
+        configuration.AbortOnConnectFail = false;
+        configuration.ConnectRetry = 3;
+        configuration.ConnectTimeout = 5000;
+
+        return ConnectionMultiplexer.Connect(
+            configuration
+        );
+    }
+);
 var app = builder.Build();
 
 app.MapControllers();

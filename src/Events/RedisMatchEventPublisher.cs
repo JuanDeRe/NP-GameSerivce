@@ -7,13 +7,13 @@ using StackExchange.Redis;
 namespace GameService.Events;
 
 /// <summary>
-/// Persists and publishes match lifecycle events through Redis.
+/// Persists match lifecycle events in a Redis Stream.
 /// </summary>
 public class RedisMatchEventPublisher
     : IMatchEventPublisher
 {
-    private const string MatchFinishedChannel =
-        "nightwatch:events:match-finished";
+    private const string MatchEventsStream =
+        "nightwatch:streams:match-events";
 
     private readonly IConnectionMultiplexer _redis;
     private readonly RedisOptions _options;
@@ -26,7 +26,7 @@ public class RedisMatchEventPublisher
         _options = options.Value;
     }
 
-    public async Task PublishMatchFinishedAsync(
+    public Task PublishMatchFinishedAsync(
         MatchFinishedEvent matchFinishedEvent)
     {
         var json = JsonSerializer.Serialize(
@@ -40,20 +40,38 @@ public class RedisMatchEventPublisher
             $"match-finished:" +
             $"{matchFinishedEvent.MatchId}";
 
-        // Persistimos primero el resultado para poder reconciliarlo.
-        await database.StringSetAsync(
+        // Primero persistimos el estado final.
+        database.StringSet(
             stateKey,
             json,
             TimeSpan.FromHours(24)
         );
 
-        var subscriber = _redis.GetSubscriber();
-
-        await subscriber.PublishAsync(
-            RedisChannel.Literal(
-                MatchFinishedChannel
-            ),
-            json
+        // Después agregamos el evento durable al Stream.
+        database.StreamAdd(
+            MatchEventsStream,
+            [
+                new NameValueEntry(
+                    "eventType",
+                    "MatchFinished"
+                ),
+                new NameValueEntry(
+                    "eventId",
+                    matchFinishedEvent.EventId
+                ),
+                new NameValueEntry(
+                    "matchId",
+                    matchFinishedEvent.MatchId
+                ),
+                new NameValueEntry(
+                    "payload",
+                    json
+                )
+            ],
+            maxLength: 10_000,
+            useApproximateMaxLength: true
         );
+
+        return Task.CompletedTask;
     }
 }
