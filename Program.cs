@@ -4,9 +4,10 @@ using GameService.Stores;
 using GameService.Services;
 using GameService.BackgroundServices;
 using GameService.Configuration;
-using GameService.Configuration;
 using GameService.Events;
 using StackExchange.Redis;
+using GameService.BackgroundServices;
+using GameService.Registry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,8 +75,25 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
         );
     }
 );
+builder.Services.Configure<
+    GameServiceInstanceOptions
+>(
+    builder.Configuration.GetSection(
+        "GameService"
+    )
+);
+
+builder.Services.AddSingleton<
+    IGameServiceRegistry,
+    RedisGameServiceRegistry
+>();
+
+builder.Services.AddHostedService<
+    GameServiceHeartbeatProcessor
+>();
+builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 app.MapControllers();
-
+app.MapHealthChecks("/health");
 app.Run();
