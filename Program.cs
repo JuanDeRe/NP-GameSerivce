@@ -6,8 +6,9 @@ using GameService.BackgroundServices;
 using GameService.Configuration;
 using GameService.Events;
 using StackExchange.Redis;
-using GameService.BackgroundServices;
 using GameService.Registry;
+using Amazon.CloudWatch;
+using GameService.Observability;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,23 +34,6 @@ builder.Services.AddScoped<IMovementService, MovementService>();
 builder.Services.AddScoped<IDoorService, DoorService>();
 builder.Services.AddSingleton<IMatchEventPublisher,RedisMatchEventPublisher>();
 builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection("Redis"));
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    serviceProvider =>
-    {
-        var configuration =
-            serviceProvider
-                .GetRequiredService<
-                    Microsoft.Extensions.Options.IOptions<
-                        RedisOptions
-                    >
-                >()
-                .Value;
-
-        return ConnectionMultiplexer.Connect(
-            configuration.ConnectionString
-        );
-    }
-);
 builder.Services.AddSingleton<IConnectionMultiplexer>(
     serviceProvider =>
     {
@@ -90,6 +74,19 @@ builder.Services.AddSingleton<
 
 builder.Services.AddHostedService<
     GameServiceHeartbeatProcessor
+>();
+builder.Services.Configure<GameMetricsOptions>(
+    builder.Configuration.GetSection(
+        GameMetricsOptions.SectionName
+    )
+);
+builder.Services.AddSingleton<
+    IAmazonCloudWatch
+>(
+    _ => new AmazonCloudWatchClient()
+);
+builder.Services.AddHostedService<
+    CloudWatchGameMetricsPublisher
 >();
 builder.Services.AddHealthChecks();
 var app = builder.Build();
