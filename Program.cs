@@ -9,6 +9,7 @@ using StackExchange.Redis;
 using GameService.Registry;
 using Amazon.CloudWatch;
 using GameService.Observability;
+using Amazon.AutoScaling;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -89,6 +90,12 @@ builder.Services.AddHostedService<
     CloudWatchGameMetricsPublisher
 >();
 builder.Services.AddHealthChecks();
+
+builder.Services.AddSingleton<
+    IAmazonAutoScaling
+>(
+    _ => new AmazonAutoScalingClient()
+);
 var app = builder.Build();
 
 app.MapControllers();

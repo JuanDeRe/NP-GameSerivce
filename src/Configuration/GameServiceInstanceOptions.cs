@@ -7,6 +7,9 @@ public class GameServiceInstanceOptions
 
     public string InternalUrl { get; set; } =
         "http://localhost:5002";
+    
+    public string AutoScalingGroupName { get; set; } =
+        string.Empty;
 
     public int MaxMatches { get; set; } = 20;
 
